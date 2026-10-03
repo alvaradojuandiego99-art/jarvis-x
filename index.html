@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JARVIS X</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #080808;
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 30px 20px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 5px;
+    }
+
+    .status {
+      color: #00ff88;
+      margin-bottom: 30px;
+    }
+
+    .chat {
+      background: #151515;
+      border-radius: 15px;
+      padding: 20px;
+      min-height: 300px;
+      text-align: left;
+    }
+
+    .message {
+      background: #222;
+      padding: 12px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .input-area {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    input {
+      flex: 1;
+      padding: 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 14px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #00ff88;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <h1>JARVIS X</h1>
+
+    <div class="status">
+      ● SISTEMA EN LÍNEA
+    </div>
+
+    <div class="chat" id="chat">
+      <div class="message">
+        JARVIS: Hola. Sistema iniciado. ¿En qué puedo ayudarte?
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input id="message" placeholder="Escribe a JARVIS...">
+      <button onclick="sendMessage()">Enviar</button>
+    </div>
+
+  </div>
+
+  <script>
+    function sendMessage() {
+
+      const input = document.getElementById("message");
+      const chat = document.getElementById("chat");
+
+      if (input.value.trim() === "") return;
+
+      chat.innerHTML += `
+        <div class="message">
+          TÚ: ${input.value}
+        </div>
+      `;
+
+      chat.innerHTML += `
+        <div class="message">
+          JARVIS: Recibido. Mi cerebro todavía está en construcción.
+        </div>
+      `;
+
+      input.value = "";
+    }
+  </script>
+
+</body>
+</html>
