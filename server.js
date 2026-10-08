@@ -20,12 +20,12 @@ app.post("/chat", async (req, res) => {
     const mensaje = req.body.mensaje;
 
     const respuesta = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-        process.env.GEMINI_API_KEY,
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
       {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "x-goog-api-key": process.env.GEMINI_API_KEY
         },
         body: JSON.stringify({
           contents: [
@@ -43,27 +43,23 @@ app.post("/chat", async (req, res) => {
 
     const data = await respuesta.json();
 
-    console.log("RESPUESTA GEMINI:", JSON.stringify(data));
+    console.log("GEMINI:", JSON.stringify(data));
 
-    if (data.error) {
+    if (!respuesta.ok) {
       return res.json({
-        respuesta: "Error de Gemini: " + data.error.message
+        respuesta: "Error de Gemini: " + (data.error?.message || "Error desconocido")
       });
     }
 
     const texto =
       data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!texto) {
-      return res.json({
-        respuesta: "Gemini no devolvió texto. Revisa la configuración de la API."
-      });
-    }
-
-    res.json({ respuesta: texto });
+    res.json({
+      respuesta: texto || "Gemini no devolvió texto."
+    });
 
   } catch (error) {
-    console.error("ERROR:", error);
+    console.error(error);
 
     res.status(500).json({
       respuesta: "Error del servidor: " + error.message
