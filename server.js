@@ -4,6 +4,19 @@ const app = express();
 
 app.use(express.json());
 
+// Permitir conexión desde GitHub Pages
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 app.get("/", (req, res) => {
   res.send("JARVIS X está en línea 🤖");
 });
@@ -14,7 +27,7 @@ app.post("/chat", async (req, res) => {
 
     const respuesta = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" +
-      process.env.GEMINI_API_KEY,
+        process.env.GEMINI_API_KEY,
       {
         method: "POST",
         headers: {
@@ -44,6 +57,7 @@ app.post("/chat", async (req, res) => {
 
   } catch (error) {
     console.error(error);
+
     res.status(500).json({
       respuesta: "Error al conectar con mi cerebro."
     });
