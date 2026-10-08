@@ -22,7 +22,6 @@
 
     h1 {
       font-size: 42px;
-      margin-bottom: 5px;
     }
 
     .status {
@@ -81,7 +80,7 @@
 
     <div class="chat" id="chat">
       <div class="message">
-        JARVIS: Hola. Sistema iniciado. ¿En qué puedo ayudarte?
+        JARVIS: Hola. Mi cerebro está listo. 🤖
       </div>
     </div>
 
@@ -93,26 +92,60 @@
   </div>
 
   <script>
-    function sendMessage() {
+    async function sendMessage() {
 
       const input = document.getElementById("message");
       const chat = document.getElementById("chat");
 
-      if (input.value.trim() === "") return;
+      const mensaje = input.value.trim();
+
+      if (mensaje === "") return;
 
       chat.innerHTML += `
         <div class="message">
-          TÚ: ${input.value}
-        </div>
-      `;
-
-      chat.innerHTML += `
-        <div class="message">
-          JARVIS: Recibido. Mi cerebro todavía está en construcción.
+          TÚ: ${mensaje}
         </div>
       `;
 
       input.value = "";
+
+      chat.innerHTML += `
+        <div class="message" id="loading">
+          JARVIS: Pensando... 🤖
+        </div>
+      `;
+
+      try {
+
+        const respuesta = await fetch(
+          "https://jarvis-x-3adw.onrender.com/chat",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              mensaje: mensaje
+            })
+          }
+        );
+
+        const datos = await respuesta.json();
+
+        document.getElementById("loading").remove();
+
+        chat.innerHTML += `
+          <div class="message">
+            JARVIS: ${datos.respuesta}
+          </div>
+        `;
+
+      } catch (error) {
+
+        document.getElementById("loading").innerText =
+          "JARVIS: No pude conectarme con mi cerebro. ❌";
+
+      }
     }
   </script>
 
