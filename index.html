@@ -1,153 +1,235 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>JARVIS X</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #080808;
-      color: white;
-      text-align: center;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-      padding: 30px 20px;
-    }
-
-    h1 {
-      font-size: 42px;
-    }
-
-    .status {
-      color: #00ff88;
-      margin-bottom: 30px;
-    }
-
-    .chat {
-      background: #151515;
-      border-radius: 15px;
-      padding: 20px;
-      min-height: 300px;
-      text-align: left;
-    }
-
-    .message {
-      background: #222;
-      padding: 12px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    .input-area {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-    }
-
-    input {
-      flex: 1;
-      padding: 14px;
-      border-radius: 10px;
-      border: none;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 14px 18px;
-      border: none;
-      border-radius: 10px;
-      background: #00ff88;
-      font-weight: bold;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS X</title>
+<style>
+body {
+  margin: 0;
+  background: #080d14;
+  color: #e8faff;
+  font-family: Arial, sans-serif;
+}
+.container {
+  max-width: 650px;
+  margin: auto;
+  padding: 25px 16px;
+}
+h1 {
+  text-align: center;
+  color: #00eaff;
+  letter-spacing: 4px;
+}
+.status {
+  text-align: center;
+  color: #00ff99;
+  margin-bottom: 25px;
+}
+.chat {
+  background: #111b27;
+  border: 1px solid #17495c;
+  border-radius: 15px;
+  padding: 15px;
+  min-height: 280px;
+  overflow-wrap: anywhere;
+}
+.message {
+  background: #1b2b3b;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+.input-area {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+}
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 13px;
+  border-radius: 10px;
+  border: 1px solid #246077;
+  background: #101923;
+  color: white;
+  font-size: 16px;
+}
+button {
+  border: 0;
+  border-radius: 10px;
+  padding: 12px;
+  background: #00d9ef;
+  color: #001017;
+  font-weight: bold;
+}
+button:disabled {
+  opacity: .5;
+}
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.controls button {
+  flex: 1;
+}
+#mic {
+  background: #00ff99;
+}
+.note {
+  color: #a9c2d2;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 14px;
+}
+</style>
 </head>
-
 <body>
+<div class="container">
+  <h1>JARVIS X</h1>
+  <div class="status">● SISTEMA EN LÍNEA</div>
 
-  <div class="container">
-
-    <h1>JARVIS X</h1>
-
-    <div class="status">
-      ● SISTEMA EN LÍNEA
-    </div>
-
-    <div class="chat" id="chat">
-      <div class="message">
-        JARVIS: Hola. Mi cerebro está listo. 🤖
-      </div>
-    </div>
-
-    <div class="input-area">
-      <input id="message" placeholder="Escribe a JARVIS...">
-      <button onclick="sendMessage()">Enviar</button>
-    </div>
-
+  <div class="chat" id="chat">
+    <div class="message">JARVIS: Sistema de voz preparado. ¿En qué puedo ayudarte? 🤖</div>
   </div>
 
-  <script>
-    async function sendMessage() {
+  <div class="input-area">
+    <input id="message" placeholder="Escribe a JARVIS..." autocomplete="off">
+    <button id="send">Enviar</button>
+  </div>
 
-      const input = document.getElementById("message");
-      const chat = document.getElementById("chat");
+  <div class="controls">
+    <button id="mic">🎙️ Hablar</button>
+    <button id="voice">🔊 Voz: activada</button>
+  </div>
 
-      const mensaje = input.value.trim();
+  <div class="note" id="status">Pulsa el micrófono y permite el acceso si te lo pide.</div>
+</div>
 
-      if (mensaje === "") return;
+<script>
+const chat = document.getElementById("chat");
+const input = document.getElementById("message");
+const send = document.getElementById("send");
+const mic = document.getElementById("mic");
+const voice = document.getElementById("voice");
+const status = document.getElementById("status");
 
-      chat.innerHTML += `
-        <div class="message">
-          TÚ: ${mensaje}
-        </div>
-      `;
+let voiceEnabled = true;
+let listening = false;
 
-      input.value = "";
+function addMessage(who, text) {
+  const div = document.createElement("div");
+  div.className = "message";
+  div.textContent = who + ": " + text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return div;
+}
 
-      chat.innerHTML += `
-        <div class="message" id="loading">
-          JARVIS: Pensando... 🤖
-        </div>
-      `;
+function speak(text) {
+  if (!voiceEnabled || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "es-ES";
+  utterance.rate = 1;
+  window.speechSynthesis.speak(utterance);
+}
 
-      try {
+voice.onclick = () => {
+  voiceEnabled = !voiceEnabled;
+  voice.textContent = voiceEnabled ? "🔊 Voz: activada" : "🔇 Voz: apagada";
+  if (!voiceEnabled && "speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+  }
+};
 
-        const respuesta = await fetch(
-          "https://jarvis-x-3adw.onrender.com/chat",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              mensaje: mensaje
-            })
-          }
-        );
+async function sendMessage() {
+  const mensaje = input.value.trim();
+  if (!mensaje) return;
 
-        const datos = await respuesta.json();
+  addMessage("TÚ", mensaje);
+  input.value = "";
+  send.disabled = true;
+  mic.disabled = true;
+  const loading = addMessage("JARVIS", "Pensando... 🤖");
 
-        document.getElementById("loading").remove();
-
-        chat.innerHTML += `
-          <div class="message">
-            JARVIS: ${datos.respuesta}
-          </div>
-        `;
-
-      } catch (error) {
-
-        document.getElementById("loading").innerText =
-          "JARVIS: No pude conectarme con mi cerebro. ❌";
-
+  try {
+    const response = await fetch(
+      "https://jarvis-x-3adw.onrender.com/chat",
+      {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({mensaje})
       }
-    }
-  </script>
+    );
 
+    const data = await response.json();
+    const respuesta = data.respuesta || "No recibí una respuesta.";
+    loading.textContent = "JARVIS: " + respuesta;
+    speak(respuesta);
+  } catch (error) {
+    loading.textContent = "JARVIS: No pude conectar con mi cerebro. Revisa tu conexión.";
+  } finally {
+    send.disabled = false;
+    mic.disabled = false;
+    input.focus();
+  }
+}
+
+send.onclick = sendMessage;
+input.addEventListener("keydown", event => {
+  if (event.key === "Enter") sendMessage();
+});
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!SpeechRecognition) {
+  mic.onclick = () => {
+    status.textContent = "El reconocimiento de voz no está disponible en este navegador. Prueba Chrome.";
+  };
+} else {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "es-PE";
+  recognition.continuous = false;
+  recognition.interimResults = false;
+
+  mic.onclick = () => {
+    if (listening) {
+      recognition.stop();
+      return;
+    }
+    try {
+      recognition.start();
+    } catch (error) {
+      status.textContent = "Espera un momento y vuelve a pulsar el micrófono.";
+    }
+  };
+
+  recognition.onstart = () => {
+    listening = true;
+    mic.textContent = "⏹️ Escuchando...";
+    status.textContent = "Habla ahora; te estoy escuchando.";
+  };
+
+  recognition.onresult = event => {
+    input.value = event.results[0][0].transcript;
+    status.textContent = "Te escuché. Enviando mensaje...";
+    sendMessage();
+  };
+
+  recognition.onerror = event => {
+    status.textContent = "No pude usar el micrófono: " + event.error + ". Comprueba los permisos.";
+  };
+
+  recognition.onend = () => {
+    listening = false;
+    mic.textContent = "🎙️ Hablar";
+  };
+}
+</script>
 </body>
 </html>
