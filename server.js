@@ -4,16 +4,10 @@ const app = express();
 
 app.use(express.json());
 
-// Permitir conexión desde GitHub Pages
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-
   next();
 });
 
@@ -49,17 +43,30 @@ app.post("/chat", async (req, res) => {
 
     const data = await respuesta.json();
 
+    console.log("RESPUESTA GEMINI:", JSON.stringify(data));
+
+    if (data.error) {
+      return res.json({
+        respuesta: "Error de Gemini: " + data.error.message
+      });
+    }
+
     const texto =
-      data.candidates?.[0]?.content?.parts?.[0]?.text ||
-      "No pude obtener una respuesta.";
+      data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+    if (!texto) {
+      return res.json({
+        respuesta: "Gemini no devolvió texto. Revisa la configuración de la API."
+      });
+    }
 
     res.json({ respuesta: texto });
 
   } catch (error) {
-    console.error(error);
+    console.error("ERROR:", error);
 
     res.status(500).json({
-      respuesta: "Error al conectar con mi cerebro."
+      respuesta: "Error del servidor: " + error.message
     });
   }
 });
